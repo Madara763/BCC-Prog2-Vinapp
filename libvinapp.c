@@ -5,8 +5,9 @@
     Data: 06/06/2023
 */
 
-#include<string.h>
+#include <string.h>
 
+//verifica a entrada
 int checaarg(int argc, char **argv){
     
     //testa o --help
@@ -34,7 +35,7 @@ void arghelp(){
     printf("\n\t -m target: move o membro indicado na linha de comando para ");
     printf("imediatamente depois do membro target existete no arquivo.");
 
-    printf("\n\t -c arquivo de chave, opcional ao -b");
+    printf("\n\t -c lista o conteudo do arquivo.");
 
     printf("\nAjuda:");
     printf("\n\t -h ou --help");
