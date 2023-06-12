@@ -2,6 +2,7 @@ int main(int argc, char **argv) {
     char *destinoNome;
     char *vpp;
     int i, option;
+    //teste
 
     // Testa se não há mais opções/argumentos
     if(argc == 1)
