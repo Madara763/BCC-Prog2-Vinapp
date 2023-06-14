@@ -35,14 +35,8 @@ typedef struct jose{
     m_nodo *ultimo;
 } jose;
 
-//imprime como devem ser os argumentos
-void arghelp();
 
-//Imprime erros conforme o código recebido
-void argerror(char cod);
-
-//Verifica os argumentos da entrada
-int checaarg(int argc, char **argv);
-
+//retorna o caminho completo do arquivo
+char* caminhoCompleto(minfo *arq);
 
 #endif

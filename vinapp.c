@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "libvinapp.h"
+#include "libarg.h"
 
 int main(int argc, char **argv) {
 
@@ -13,7 +14,7 @@ int main(int argc, char **argv) {
     char str[256], caminho_aux[4352], byte;
     
     //nome do arq
-    strcpy(a.nome, "arqA.txt\0");   
+    strcpy(a.nome, "arqA.txt");   
     
     //caminho do arq
     getcwd(str, 256);
@@ -22,7 +23,7 @@ int main(int argc, char **argv) {
     //caminho completo com nome
     strcpy(caminho_aux, a.caminho);
     strcat(caminho_aux, "/");
-    strcat(caminho_aux, "arqA.txt");
+    strcat(caminho_aux, a.nome);
     
 
     //stats do nome

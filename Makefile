@@ -1,6 +1,6 @@
 CFLAGS = -Wall -g -std=c99 # gerar "warnings" detalhados e infos de depuração
  
-objs = vinapp.o libvinapp.o 
+objs = vinapp.o libvinapp.o libarg.o
 
 # regra default (primeira regra)
 all: vinapp
@@ -11,6 +11,7 @@ vinapp:	$(objs)
 # regras de compilação
 vinapp.o:	vinapp.c
 libvinapp.o:	libvinapp.c 
+libarg.o:	libarg.c 
 
 # remove arquivos temporários
 clean:
