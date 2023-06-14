@@ -16,23 +16,17 @@
     Estrutura que armazenará as informações do 'archiver' .vpp
 */
 typedef struct minfo{
-    char nome[256];
-    char caminho[4096];
-    unsigned long long ini;
-    unsigned long pos;
-    dev_t ID;                /* ID of device containing file */
-    mode_t modo;             /*File type and mode*/
-    uid_t uid;               /* User ID of owner */
-    gid_t gid;               /* Group ID of owner */
-    off_t size;              /* Total size, in bytes */
-    struct timespec mtim;    /* Time of last modification */
-    struct timespec ctim;    /* Time of last status change */
+    char nome[256];             //nome do arquivo
+    char caminho[4096];         //nome do diretorio
+    unsigned long long ini;     //quantidade de bytes do inicio do .vvp até o membro
+    unsigned long pos;          //posição ordinal do membro no .vpp
+    struct stat info;             //status do arquivo
 } minfo;
 
 typedef struct m_nodo{
     minfo *membro;
-    m_nodo *prox;
-    m_nodo *ante;
+    struct m_nodo *prox;
+    struct m_nodo *ante;
 } m_nodo;
 
 typedef struct jose{
@@ -41,10 +35,11 @@ typedef struct jose{
     m_nodo *ultimo;
 } jose;
 
-
-
 //imprime como devem ser os argumentos
 void arghelp();
+
+//Imprime erros conforme o código recebido
+void argerror(char cod);
 
 //Verifica os argumentos da entrada
 int checaarg(int argc, char **argv);

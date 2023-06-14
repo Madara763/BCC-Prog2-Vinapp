@@ -3,10 +3,10 @@ CFLAGS = -Wall -g -std=c99 # gerar "warnings" detalhados e infos de depuração
 objs = vinapp.o libvinapp.o 
 
 # regra default (primeira regra)
-all: vina++
+all: vinapp
  
 # regras de ligacao
-vina++:	$(objs)
+vinapp:	$(objs)
  
 # regras de compilação
 vinapp.o:	vinapp.c

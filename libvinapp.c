@@ -5,23 +5,10 @@
     Data: 06/06/2023
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
-//verifica a entrada
-int checaarg(int argc, char **argv){
-    
-    //testa o --help
-    if(argc==2){    
-        if((strcmp(argv[1],"-h") == 0) || (strcmp(argv[1],"--help") == 0) ){
-            arghelp();
-            return 0;
-        }
-    }
-  
-
-    argerror();
-    return 0;
-}
+#include "libvinapp.h"
 
 //imprime como devem ser os argumentos
 void arghelp(){
@@ -40,4 +27,36 @@ void arghelp(){
     printf("\nAjuda:");
     printf("\n\t -h ou --help");
     printf("\nVina++ V1.0\tPor Davi Lazzarin\n");
+}
+
+//Imprime erros conforme o código recebido
+void argerror(char cod){
+
+    switch (cod)
+    {
+        case '0':
+            printf("Arumentos insuficientes.");
+            break;
+
+        default:
+            break;
+
+    }
+
+}
+
+//verifica a entrada
+int checaarg(int argc, char **argv){
+    
+    //testa o --help
+    if(argc==2){    
+        if((strcmp(argv[1],"-h") == 0) || (strcmp(argv[1],"--help") == 0) ){
+            arghelp();
+            return 1;
+        }
+    }
+    
+
+    argerror('1');
+    return 1;
 }
