@@ -43,8 +43,7 @@ int main(int argc, char **argv) {
     printf("Nome no dir a: %s\n", a.caminho);
     printf("Nome do caminho completo a: /%s\n", caminho_aux);
     
-
-
+    
 
     //Abre o arquivo e lê ele inteiro
     FILE *bkp;
@@ -62,8 +61,17 @@ int main(int argc, char **argv) {
         i++;
         fread(&byte,1,1,bkp);
     }
-    
 
+    removeBytes(bkp, 2, 4);
+    
+    rewind(bkp);
+    fread(&byte,1,1,bkp);
+    while (!feof(bkp)){
+        
+        printf("Byte %d: %c\n",i, byte);
+        i++;
+        fread(&byte,1,1,bkp);
+    }
     fclose(bkp);
     return 0;
 }
