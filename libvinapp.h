@@ -18,9 +18,10 @@
 typedef struct minfo{
     char nome[256];             //nome do arquivo
     char caminho[4096];         //nome do diretorio
-    unsigned int ini;     //quantidade de bytes do inicio do .vvp até o membro
-    unsigned int pos;          //posição ordinal do membro no .vpp
-    struct stat info;             //status do arquivo
+    char path[4352];            //caminho completo
+    unsigned int ini;           //quantidade de bytes do inicio do .vvp até o membro
+    unsigned int pos;           //posição ordinal do membro no .vpp
+    struct stat info;           //status do arquivo
 } minfo;
 
 typedef struct m_nodo{
@@ -35,9 +36,8 @@ typedef struct jose{
     m_nodo *ultimo;
 } jose;
 
-
-//retorna o caminho completo do arquivo
-char* caminhoCompleto(minfo *arq);
+//recebe o nome de um arquivo e gera a estrutura de dados sobre ele
+minfo* geraminfo(char* path);
 
 //le o jose e retorna a struct de informações do membro buscado
 minfo* buscaMembro(char* nome, jose* j);
@@ -48,8 +48,11 @@ unsigned int tamanhoarq(FILE* arq);
 //Apaga o intervalo de bytes do arquivo
 int removeBytes(FILE* arq, const unsigned int b_ini, const unsigned int b_fim);
 
-//Remove o "membro" do .vpp
-int vinaRemove(char * nome, jose* j, FILE* arq);
+//Remove o membro com o nome do .vpp
+int vinaRemove(char* nome, jose* j, FILE* arq);
+
+//imprime os metadados passados
+void printminfo(minfo* dados);
 
 
 #endif
