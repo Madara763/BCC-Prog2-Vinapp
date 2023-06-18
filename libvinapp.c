@@ -123,7 +123,6 @@ minfo* geraminfo(char* path){
 
 //le o jose e retorna a struct de informações do membro buscado OK
 minfo* buscaMembro(char* nome, jose* j){
-
     minfo* rt;
     m_nodo* aux;
     
@@ -136,7 +135,6 @@ minfo* buscaMembro(char* nome, jose* j){
     return NULL;
 }//BuscaMembro OK
 
-
 //Arruma a estrutura após a remoção de um membro
 void arrumarm(jose* j, minfo* removido){
     
@@ -145,12 +143,8 @@ void arrumarm(jose* j, minfo* removido){
 
     //aux =  m_nodo que comtém o removido
     aux=j->primeiro;
-    while(aux->membro != removido){
+    while(aux->membro != removido) 
         aux=aux->prox;
-    }
-    
-    printf("Nome do removido: %s\n", removido->nome);
-    printf("Nome em aux: %s\n", aux->membro->nome);
     
     bkp=aux;
     while(aux->prox != NULL){
@@ -160,29 +154,28 @@ void arrumarm(jose* j, minfo* removido){
 
     aux=bkp;
 
-    //caso seja o primeiro membro
-    if(aux->membro == j->primeiro->membro){
-        printf("o primeiro foi removido\n");
-        j->primeiro=aux->prox;
-        aux->prox->ante=NULL;
-    }//caso seja o ultimo
-    else if(aux->membro == j->ultimo->membro){
-        printf("o ultimo foi removido\n");
-        j->ultimo=aux->ante;
-        aux->ante->prox=NULL;
+    if(j->quant > 1){
+        //caso seja o primeiro membro
+        if(aux->membro == j->primeiro->membro){
+            j->primeiro=aux->prox;
+            aux->prox->ante=NULL;
+        }//caso seja o ultimo
+        else if(aux->membro == j->ultimo->membro){
+            j->ultimo=aux->ante;
+            aux->ante->prox=NULL;
+        }
+        else{//caso seja um do meio
+            aux->ante->prox=aux->prox;
+            aux->prox->ante=aux->ante;
+        }
     }
-    else{//caso seja um do meio
-        printf("um do meio foi removido\n");
-        aux->ante->prox=aux->prox;
-        aux->prox->ante=aux->ante;
+    else{
+        j->primeiro=NULL;
+        j->ultimo=NULL;
     }
 
     j->quant--;
-
-    if(j->quant){
-        printf("j primeiro : %s\n", j->primeiro->membro->nome);
-        printf("j ultimo : %s\n", j->ultimo->membro->nome);
-    }
+    
     free(aux->membro);
     aux->membro=NULL;
     free(aux);
@@ -198,8 +191,6 @@ int vinaRemove(char* nome, jose* j, FILE* arq){
     membro=buscaMembro(nome, j);
     unsigned int b_ini, b_fim, rt;
     if(membro != NULL){
-        
-        printf("Acho o membro: %s\n", membro->nome);
         b_ini=membro->ini;
         b_fim=b_ini + ((membro->info.st_size) - 1);
         rt=removeBytes(arq, b_ini, b_fim);
