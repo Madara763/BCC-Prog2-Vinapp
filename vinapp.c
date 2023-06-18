@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
     FILE *arq=fopen("arqcontrol.vpp", "r+");
     
-    //vinaRemove("test.txt", &j, arq);
+    vinaRemove("test.txt", &j, arq);
     vinaRemove("test.txt", &j, arq);
     
     //vinaRemove("arqA.txt", &j, arq);

@@ -46,14 +46,14 @@ typedef struct jose{
 #define NAME_SIZE 256
 #define PATH_SIZE 4096
 
-//recebe nome e o caminho e concatena eles 
+//recebe nome e o caminho e concatena eles OK
 void geraCaminhoCompleto(char* caminho, char* nome, char* l_caminho){
     strcpy(l_caminho, caminho);
     strcpy(l_caminho, "/");
     strcpy(l_caminho, nome);
 }
 
-//recebe o nome de um arquivo e gera a estrutura de dados sobre ele
+//recebe o nome de um arquivo e gera a estrutura de dados sobre ele OK
 minfo* geraminfo(char* path){
    
     char nome[NAME_SIZE];
@@ -121,7 +121,7 @@ minfo* geraminfo(char* path){
     return dados;
 }
 
-//le o jose e retorna a struct de informações do membro buscado
+//le o jose e retorna a struct de informações do membro buscado OK
 minfo* buscaMembro(char* nome, jose* j){
 
     minfo* rt;
@@ -149,25 +149,29 @@ void arrumarm(jose* j, minfo* removido){
         aux=aux->prox;
     }
     
+    printf("Nome do removido: %s\n", removido->nome);
+    printf("Nome em aux: %s\n", aux->membro->nome);
+    
     bkp=aux;
-    while(aux != j->ultimo){
-        aux->prox->membro->ini -= ajuste;
+    while(aux->prox != NULL){
+        aux->membro->ini = aux->membro->ini - ajuste;
         aux=aux->prox;
     }
+
     aux=bkp;
 
     //caso seja o primeiro membro
     if(aux->membro == j->primeiro->membro){
         printf("o primeiro foi removido\n");
         j->primeiro=aux->prox;
-        aux->ante=NULL;
-    }//caso seja o
+        aux->prox->ante=NULL;
+    }//caso seja o ultimo
     else if(aux->membro == j->ultimo->membro){
         printf("o ultimo foi removido\n");
         j->ultimo=aux->ante;
-        aux->prox=NULL;
+        aux->ante->prox=NULL;
     }
-    else{
+    else{//caso seja um do meio
         printf("um do meio foi removido\n");
         aux->ante->prox=aux->prox;
         aux->prox->ante=aux->ante;
@@ -209,6 +213,7 @@ int vinaRemove(char* nome, jose* j, FILE* arq){
 }//remove OK falta ajustar estrutura após remoção
 
 //Apaga o intervalo de bytes do arquivo
+//Retorna 0 se deu certo e 1 ou 2 em caso de erro
 int removeBytes(FILE* arq, const unsigned int b_ini, const unsigned int b_fim){
     char* buffer[BUFFER_SIZE];
 
