@@ -45,6 +45,7 @@ typedef struct jose{
 #define BUFFER_SIZE 1024
 #define NAME_SIZE 256
 #define PATH_SIZE 4096
+#define OFFSET_SIZE 4
 
 //recebe nome e o caminho e concatena eles OK
 void geraCaminhoCompleto(char* caminho, char* nome, char* l_caminho){
@@ -53,7 +54,8 @@ void geraCaminhoCompleto(char* caminho, char* nome, char* l_caminho){
     strcpy(l_caminho, nome);
 }
 
-//recebe o nome de um arquivo e gera a estrutura de dados sobre ele OK
+//recebe o nome de um arquivo e gera a estrutura de dados sobre ele 
+//Retorna um ponteiro para a estrutura em caso de sucesso ou NULL em caso de erro
 minfo* geraminfo(char* path){
    
     char nome[NAME_SIZE];
@@ -66,7 +68,7 @@ minfo* geraminfo(char* path){
     minfo *dados;
     dados=malloc(sizeof(minfo));
     if(!dados){
-        fprintf(stderr,"Erro ao gera metadados\n");
+        fprintf(stderr,"Erro ao gerar metadados.\n");
         return NULL;
     }
 
@@ -186,7 +188,7 @@ void arrumarm(jose* j, minfo* removido){
 //retornos:
 // 0 em caso de sucesso
 // 1 em caso de erro
-int vinaRemove(char* nome, jose* j, FILE* arq){
+int vinaRemove(char* nome, FILE* arq, jose* j){
     minfo* membro;
     membro=buscaMembro(nome, j);
     unsigned int b_ini, b_fim, rt;
@@ -199,7 +201,8 @@ int vinaRemove(char* nome, jose* j, FILE* arq){
             return 0;
         }
     }
-    else fprintf(stderr,"Impossivel remover '%s'.", nome);
+    
+    fprintf(stderr,"Impossivel remover '%s'.\n", nome);
     return 1;
 }//remove OK falta ajustar estrutura após remoção
 
@@ -240,7 +243,8 @@ int removeBytes(FILE* arq, const unsigned int b_ini, const unsigned int b_fim){
 
     rewind(arq);
 
-    ftruncate(fileno(arq), size - ( b_fim - b_ini+1) ); //mantém o segundo paramentro de bytes no arquivo a partir do ponteiro; 
+    //mantém o segundo paramentro de bytes, no arquivo, a partir do ponteiro
+    ftruncate(fileno(arq), size - ( b_fim - b_ini+1) ); 
 
     return 0;
 }//removebytes OK
@@ -253,6 +257,72 @@ unsigned int tamanhoarq(FILE* arq){
     
     return (unsigned int) f_data.st_size;
 }//tamanhoArq OK
+
+//retorna a posição de inserção no final do arquivo
+unsigned int tamanhovpp(jose* j){
+    
+    unsigned int tam;
+    if(j->ultimo){
+        tam=j->ultimo->membro->ini;
+        tam+=j->ultimo->membro->info->st_size;
+        return tam;
+    }
+    else
+        return OFFSET_SIZE + 1;
+
+}
+
+int insereBytes(minfo* member,FILE* arq, const unsigned int pos){
+
+    FILE* memberarq;
+    char buffer[BUFFER_SIZE];
+    char caminhoatual[PATH_SIZE];
+    unsigned int tam;
+
+    getcwd(caminhoatual, PATH_SIZE);
+    chdir(member->caminho);
+    memberarq=fopen(member->nome,"r+");
+    if(!memberarq){
+        fprintf(stderr,"Impossivel ler '%s'.\n", member->nome);
+        return 0;
+    }
+    
+    fseek(arq, pos, SEEK_SET);  
+    tam=member->info->st_size;
+    
+
+    while ( tam > BUFFER_SIZE){
+        
+
+    }
+    
+
+    
+}
+//Insere um arquivo no .vpp
+int vinaInsere(char* nome, FILE* arq, jose* j ){
+
+    minfo *member;
+    member=geraminfo(nome);
+    if(!member)
+        return 0;
+
+    unsigned int tamarchiver;
+    tamarchiver=tamanhovpp(j);
+
+    insereBytes(member, arq, j);
+
+
+    //gravar o arquivo
+        //ver se ele existe
+        //gravar
+
+
+    //gerar o minfo
+    //ajustar o josé
+}
+
+
 
 //imprime os metadados passados
 void printminfo(minfo* dados){

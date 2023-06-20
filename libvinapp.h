@@ -49,7 +49,7 @@ unsigned int tamanhoarq(FILE* arq);
 int removeBytes(FILE* arq, const unsigned int b_ini, const unsigned int b_fim);
 
 //Remove o membro com o nome do .vpp
-int vinaRemove(char* nome, jose* j, FILE* arq);
+int vinaRemove(char* nome, FILE* arq, jose* j);
 
 //imprime os metadados passados
 void printminfo(minfo* dados);
