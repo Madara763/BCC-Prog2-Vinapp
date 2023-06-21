@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 
     minfo *dados, *a;
     char byte, caminhoOriginal[4096];
-    //nome do arq 
+    /*nome do arq 
     dados=geraminfo("/mnt/e/UFPR/prog2/BCC-Prog2-Vinapp/arqA.txt");
     dados->ini=5;
     dados->info.st_size=6;
@@ -27,15 +27,18 @@ int main(int argc, char **argv) {
     nb->membro=a;
     nb->prox=NULL;
     nb->ante=na;
-
+    */
     jose j;
-    j.quant=2;
-    j.primeiro=na;
-    j.ultimo=nb;
-
+    j.quant=0;
+    j.primeiro=NULL;
+    j.ultimo=NULL;
+    
     FILE *arq=fopen("arqcontrol.vpp", "r+");
     
-    vinaRemove("test.txt", arq, &j);
+    vinaInsere("arqA.txt", arq, &j);
+    vinaInsere("karolzinha.love", arq, &j);
+
+    //vinaRemove("test.txt", arq, &j);
     
     //vinaRemove("arqA.txt", &j, arq);
     

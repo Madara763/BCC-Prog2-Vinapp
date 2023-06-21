@@ -184,6 +184,41 @@ void arrumarm(jose* j, minfo* removido){
     aux=NULL;
 }
 
+//Insere o membro na estrutura
+//Retorna 1 se deu certo, 0 se errado
+int arrumainsert(jose* j, minfo* novo){
+    m_nodo* novon;
+    unsigned int  inicio=0;
+
+    novon=malloc(sizeof(m_nodo));
+    if(!novon){
+        fprintf(stderr,"Erro de alocação.\n");
+        return 0;
+    }
+    novon->membro=novo;
+    novon->prox=NULL;
+    novon->ante=j->ultimo;
+    
+    //Se não for o primeiro
+    if(novon->ante){
+        novon->ante->prox=novon;    
+        inicio=novon->ante->membro->ini;
+        inicio+=novon->ante->membro->info.st_size;
+    }
+    else{
+        j->primeiro=novon;
+        inicio=5;
+    }
+
+    j->ultimo=novon;
+    j->quant++;
+
+    novo->ini=inicio;
+    novo->pos=j->quant;
+    
+    return 1;
+}
+
 //Remove o membro com o nome do .vpp
 //retornos:
 // 0 em caso de sucesso
@@ -264,7 +299,7 @@ unsigned int tamanhovpp(jose* j){
     unsigned int tam;
     if(j->ultimo){
         tam=j->ultimo->membro->ini;
-        tam+=j->ultimo->membro->info->st_size;
+        tam+=j->ultimo->membro->info.st_size;
         return tam;
     }
     else
@@ -272,13 +307,17 @@ unsigned int tamanhovpp(jose* j){
 
 }
 
-int insereBytes(minfo* member,FILE* arq, const unsigned int pos){
+//Insere os bytes do membro no .vpp passado como stream
+//Retorna 1 em caso de sucesso, 0 em caso se algum erro
+int insereMembro(minfo* member,FILE* saida, const unsigned int pos){
 
     FILE* memberarq;
     char buffer[BUFFER_SIZE];
     char caminhoatual[PATH_SIZE];
-    unsigned int tam;
+    unsigned int tam, rt;
 
+    //salvo path atual
+    //abro arquivo
     getcwd(caminhoatual, PATH_SIZE);
     chdir(member->caminho);
     memberarq=fopen(member->nome,"r+");
@@ -287,42 +326,69 @@ int insereBytes(minfo* member,FILE* arq, const unsigned int pos){
         return 0;
     }
     
-    fseek(arq, pos, SEEK_SET);  
-    tam=member->info->st_size;
+    //lê o arquivo e escreve onde pos indica no .vpp
+    //aponta para a posição pos-1
+    fseek(saida, pos-1, SEEK_SET);  
+    tam=member->info.st_size;
     
-
-    while ( tam > BUFFER_SIZE){
+    while ( tam ){    
+        //Se os bytes restantes encherem um buffer...
+        if(tam>BUFFER_SIZE) rt=fread(buffer, 1, BUFFER_SIZE, memberarq);    
+        //senão lẽ o que falta
+        else rt=fread(buffer, 1, tam, memberarq);    
         
-
+        //Se leu algo escreve o algo
+        if(rt){
+            fwrite(buffer, 1, rt,  saida);
+            tam-=rt;
+        }
+        else{   //rt==0, erro ao ler arquivo
+            fclose(memberarq);
+            memberarq=NULL;
+            chdir(caminhoatual);
+            rewind(saida);
+            fprintf(stderr,"Impossivel ler '%s'.\n", member->nome);
+            return 0;
+        }
     }
     
-
+    fclose(memberarq);
+    memberarq=NULL;
+    chdir(caminhoatual);
+    rewind(saida);
     
+    return 1;
 }
+
 //Insere um arquivo no .vpp
 int vinaInsere(char* nome, FILE* arq, jose* j ){
+    //gravar o arquivo
+        //ver se ele existe
+        //gravar
+    //gerar o minfo
+    //ajustar o josé
 
     minfo *member;
     member=geraminfo(nome);
     if(!member)
         return 0;
 
-    unsigned int tamarchiver;
+    unsigned int tamarchiver, rt;
     tamarchiver=tamanhovpp(j);
+     printf("tamanho relatado : %d\n", tamarchiver);
 
-    insereBytes(member, arq, j);
+    //Se deu algum erro ao inserir, garante que o arq estará integro
+    if( !(rt = insereMembro(member, arq, tamarchiver))){
+        ftruncate(fileno(arq), tamarchiver);
+        free(member);
+        member=NULL;
+        return 0;
+    }
 
-
-    //gravar o arquivo
-        //ver se ele existe
-        //gravar
-
-
-    //gerar o minfo
-    //ajustar o josé
+    if(arrumainsert(j, member))
+        return 1;
+    return 0;
 }
-
-
 
 //imprime os metadados passados
 void printminfo(minfo* dados){
