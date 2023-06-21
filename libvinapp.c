@@ -390,6 +390,32 @@ int vinaInsere(char* nome, FILE* arq, jose* j ){
     return 0;
 }
 
+//Cria Jose
+jose* criaJose( ){
+    jose* j;
+    j=malloc(sizeof(jose));
+    if(!j){
+        fprintf(stderr, "Erro de alocação.\n");
+        return NULL;
+    }
+
+    j->quant=0;
+    j->primeiro=NULL;
+    j->ultimo=NULL;
+
+    return j;
+}
+
+//Escreve aestrutura de dados no .vpp
+int grava
+//Lê o .vpp e gera a estrutura de dados
+jose* carregaJose(FILE* arq){
+    jose* j;
+
+
+    return j;
+}
+
 //imprime os metadados passados
 void printminfo(minfo* dados){
     printf("   nome:   %s\n",   dados->nome);
