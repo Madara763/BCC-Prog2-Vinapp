@@ -1,4 +1,4 @@
-CFLAGS = -Wall -g -std=c99 # gerar "warnings" detalhados e infos de depuração
+CFLAGS = -Wall -g  # gerar "warnings" detalhados e infos de depuração
  
 objs = vinapp.o libvinapp.o libarg.o
 

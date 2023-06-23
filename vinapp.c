@@ -4,15 +4,102 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <getopt.h>
 
 #include "libvinapp.h"
 #include "libarg.h"
 
-int main(int argc, char **argv) {
+typedef enum { NOP, INSERE, ATUALIZA, REMOVE, MOVE, LISTA, EXTRAI} Modo_t;
 
+int main(int argc, char **argv) {
+    
+    int opt, cont_opt=0, x, ctr_opt=0;
+    char **input = NULL;
+    char *arquivador = NULL;
+    Modo_t modo = NOP;
+    
+    if(argc == 2 && (strcmp(argv[1], "--help") || strcmp(argv[1], "-h") ) ){
+        arghelp();
+        return 0;
+    }
+
+    input=malloc(sizeof(char*) * argc);
+    if(!input){
+        fprintf(stderr,"Erro de alocação.\n");
+        return 0;
+    }
+
+    while ((opt = getopt(argc, argv, "ci:a:x:r:m:")) != -1) {
+        switch (opt)
+        {
+            case 'i':
+                arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[cont_opt]= strdup(argv[x]);
+                    cont_opt++;
+                }
+                modo=INSERE;
+                ctr_opt++;
+                break;
+            case 'a':
+                arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[cont_opt]= strdup(argv[x]);
+                    cont_opt++;
+                }
+                modo=ATUALIZA;
+                ctr_opt++;
+                break;
+            case 'r':
+                arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[cont_opt]= strdup(argv[x]);
+                    cont_opt++;
+                }
+                modo=REMOVE;
+                ctr_opt++;
+                break;
+            case 'x':
+                arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[cont_opt]= strdup(argv[x]);
+                    cont_opt++;
+                }
+                modo=EXTRAI;
+                ctr_opt++;
+                break;
+            case 'm':
+                arquivador=strdup(optarg);
+                input[cont_opt]= strdup(argv[optind]);
+                cont_opt++;
+                input[cont_opt]= strdup(argv[optind+1]);
+                cont_opt++; 
+                modo=MOVE;
+                ctr_opt++;              
+                break;
+            case 'c':
+                arquivador=strdup(optarg);
+                modo=LISTA;
+                ctr_opt++;
+                break;
+            default:
+                modo= NOP;
+        }		
+    }
+    
+    if(ctr_opt>1){
+        argerror(2);
+    }
+    else{
+        printf("Arquivador: %s\n", arquivador);
+
+        for(x=0; x<cont_opt; x++)
+            printf("%d argumento: %s\n", x, input[x]);
+    }
+    /*
     minfo *dados, *a;
     char byte, caminhoOriginal[4096];
-    /*nome do arq 
+    nome do arq 
     dados=geraminfo("/mnt/e/UFPR/prog2/BCC-Prog2-Vinapp/arqA.txt");
     dados->ini=5;
     dados->info.st_size=6;
@@ -27,7 +114,7 @@ int main(int argc, char **argv) {
     nb->membro=a;
     nb->prox=NULL;
     nb->ante=na;
-    */
+    
     jose j;
     j.quant=0;
     j.primeiro=NULL;
@@ -44,7 +131,7 @@ int main(int argc, char **argv) {
     
 
     //Abre o arquivo e lê ele inteiro
-    /*FILE *bkp;
+    FILE *bkp;
     getcwd(caminhoOriginal, 4096);
     chdir(dados->caminho);
     bkp=fopen(dados->nome, "r+");  //r+ abre p/ leitura e escrita asq existente
@@ -65,5 +152,6 @@ int main(int argc, char **argv) {
     chdir(caminhoOriginal);
     removeBytes(bkp, 1, 7);
     fclose(bkp);*/
+    free(input);
     return 0;
 }

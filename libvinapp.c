@@ -28,8 +28,6 @@ typedef struct jose{
 } jose;
 */
 
-#define _POSIX_C_SOURCE 200112L
-
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -49,6 +47,7 @@ typedef struct jose{
 
 //recebe nome e o caminho e concatena eles OK
 void geraCaminhoCompleto(char* caminho, char* nome, char* l_caminho){
+    strcpy(l_caminho, ".");
     strcpy(l_caminho, caminho);
     strcpy(l_caminho, "/");
     strcpy(l_caminho, nome);
@@ -388,32 +387,6 @@ int vinaInsere(char* nome, FILE* arq, jose* j ){
     if(arrumainsert(j, member))
         return 1;
     return 0;
-}
-
-//Cria Jose
-jose* criaJose( ){
-    jose* j;
-    j=malloc(sizeof(jose));
-    if(!j){
-        fprintf(stderr, "Erro de alocação.\n");
-        return NULL;
-    }
-
-    j->quant=0;
-    j->primeiro=NULL;
-    j->ultimo=NULL;
-
-    return j;
-}
-
-//Escreve aestrutura de dados no .vpp
-int grava
-//Lê o .vpp e gera a estrutura de dados
-jose* carregaJose(FILE* arq){
-    jose* j;
-
-
-    return j;
 }
 
 //imprime os metadados passados
