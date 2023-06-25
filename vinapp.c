@@ -1,3 +1,4 @@
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -9,13 +10,13 @@
 #include "libvinapp.h"
 #include "libarg.h"
 
-typedef enum { NOP, INSERE, ATUALIZA, REMOVE, MOVE, LISTA, EXTRAI} Modo_t;
+//typedef enum { NOP, INSERE, ATUALIZA, REMOVE, MOVE, LISTA, EXTRAI} Modo_t;
 
 int main(int argc, char **argv) {
     
-    int opt, cont_opt=0, x, ctr_opt=0;
+    int cont_opt=0, x, ctr_opt=0;
     char **input = NULL;
-    char *arquivador = NULL;
+    char *arquivador = NULL, *target=NULL;
     Modo_t modo = NOP;
     
     if(argc == 2 && (strcmp(argv[1], "--help") || strcmp(argv[1], "-h") ) ){
@@ -29,73 +30,68 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    while ((opt = getopt(argc, argv, "ci:a:x:r:m:")) != -1) {
-        switch (opt)
-        {
-            case 'i':
-                arquivador=strdup(optarg);
-                for(x=optind; x<argc; x++){
-                    input[cont_opt]= strdup(argv[x]);
-                    cont_opt++;
-                }
-                modo=INSERE;
-                ctr_opt++;
-                break;
-            case 'a':
-                arquivador=strdup(optarg);
-                for(x=optind; x<argc; x++){
-                    input[cont_opt]= strdup(argv[x]);
-                    cont_opt++;
-                }
-                modo=ATUALIZA;
-                ctr_opt++;
-                break;
-            case 'r':
-                arquivador=strdup(optarg);
-                for(x=optind; x<argc; x++){
-                    input[cont_opt]= strdup(argv[x]);
-                    cont_opt++;
-                }
-                modo=REMOVE;
-                ctr_opt++;
-                break;
-            case 'x':
-                arquivador=strdup(optarg);
-                for(x=optind; x<argc; x++){
-                    input[cont_opt]= strdup(argv[x]);
-                    cont_opt++;
-                }
-                modo=EXTRAI;
-                ctr_opt++;
-                break;
-            case 'm':
-                arquivador=strdup(optarg);
-                input[cont_opt]= strdup(argv[optind]);
-                cont_opt++;
-                input[cont_opt]= strdup(argv[optind+1]);
-                cont_opt++; 
-                modo=MOVE;
-                ctr_opt++;              
-                break;
-            case 'c':
-                arquivador=strdup(optarg);
-                modo=LISTA;
-                ctr_opt++;
-                break;
-            default:
-                modo= NOP;
-        }		
-    }
-    
-    if(ctr_opt>1){
+    printf("NA MAIN cont: %d, ctr: %d\n", cont_opt, ctr_opt);
+    modo=checaarg(argc, argv, &arquivador, input, &cont_opt, &ctr_opt );
+    printf("NA MAIN cont: %d, ctr: %d\n", cont_opt, ctr_opt);
+   
+    if(ctr_opt>1 || argc == 1){
         argerror(2);
     }
     else{
-        printf("Arquivador: %s\n", arquivador);
+        
+        switch (modo)
+        {
+            case INSERE:
+            
+                printf("Insere no arquivador: %s\n", arquivador);
 
-        for(x=0; x<cont_opt; x++)
-            printf("%d argumento: %s\n", x, input[x]);
+                for(x=0; x<cont_opt; x++)
+                    printf("%d arquivos: %s\n", x+1, input[x]);   
+                break;
+            case REMOVE:
+                printf("Remove do arquivador: %s\n", arquivador);
+
+                for(x=0; x<cont_opt; x++)
+                    printf("%d arquivos: %s\n", x+1, input[x]);
+                
+                break;
+            case ATUALIZA:
+                printf("Atualiza no arquivador: %s\n", arquivador);
+
+                for(x=0; x<cont_opt; x++)
+                    printf("%d arquivos: %s\n", x+1, input[x]);
+                
+                break;
+            case EXTRAI:
+                printf("Extrai do arquivador: %s\n", arquivador);
+                
+                if(cont_opt){
+                    for(x=0; x<cont_opt; x++)
+                        printf("%d arquivos: %s\n", x+1, input[x]);
+                }
+                else{
+                    printf("Extrai tudo.\n");
+                }
+                break;
+            case MOVE:
+                target=arquivador;
+                arquivador=strdup(argv[optind]);
+                printf("Target: %s\n", target);
+                printf("Move no arquivador: %s\n", arquivador);
+                printf("Membro: %s\n", argv[argc-1]);
+
+                break;
+            case LISTA:
+                printf("Lista os membros do arquivo.\n");
+                
+                break;
+            
+            default:
+                break;
+        }
     }
+
+
     /*
     minfo *dados, *a;
     char byte, caminhoOriginal[4096];

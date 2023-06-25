@@ -8,14 +8,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 #include "libarg.h"
 
-enum opecacao {INSERE, INSEREA, EXTRAI, REMOVE, LISTA, MOVE, HELP};
+
 //imprime como devem ser os argumentos
 void arghelp(){
     printf("\nArgumentos:");
     printf("\n\t -i: insere/acrescenta um ou mais membros ao arquivo.");
-    printf("\n\t\t caso o .vpp não exista, cria um com os membros passados.");
+    printf(" Caso o .vpp não exista, cria um com os membros passados.");
     printf("\n\t -a: insere/acrescenta, mas só atualiza o membro caso seja mais");
     printf(" recente que o ja adicionado");
     printf("\n\t -x: extrai os membros indicados do arquivo.");
@@ -56,17 +57,68 @@ void argerror(char cod){
 }
 
 //verifica a entrada
-int checaarg(int argc, char **argv){
+Modo_t checaarg (int argc, char **argv, char** arquivador, char* input[], int *cont_opt, int *ctr_opt){
     
-    //testa o --help
-    if(argc==2){    
-        if((strcmp(argv[1],"-h") == 0) || (strcmp(argv[1],"--help") == 0) ){
-            arghelp();
-            return 1;
-        }
+    Modo_t modo=NOP;
+    int opt, x;
+
+    while ((opt = getopt(argc, argv, "ci:a:x:r:m:")) != -1) {
+        switch (opt)
+        {
+            case 'i':
+                *arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[*cont_opt]= strdup(argv[x]);
+                    *cont_opt=*cont_opt+1;
+                }
+                modo=INSERE;
+                *ctr_opt=*ctr_opt+1;
+                break;
+            case 'a':
+                *arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[*cont_opt]= strdup(argv[x]);
+                    *cont_opt=*cont_opt+1;
+                }
+                modo=ATUALIZA;
+                *ctr_opt=*ctr_opt+1;
+                break;
+            case 'r':
+                *arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[*cont_opt]= strdup(argv[x]);
+                    *cont_opt=*cont_opt+1;
+                }
+                modo=REMOVE;
+                *ctr_opt=*ctr_opt+1;
+                break;
+            case 'x':
+                *arquivador=strdup(optarg);
+                for(x=optind; x<argc; x++){
+                    input[*cont_opt]= strdup(argv[x]);
+                    *cont_opt=*cont_opt+1;
+                }
+                modo=EXTRAI;
+                *ctr_opt=*ctr_opt+1;
+                break;
+            case 'm':
+                *arquivador=strdup(optarg);
+                input[*cont_opt]= strdup(argv[optind]);
+                *cont_opt=*cont_opt+1;
+                input[*cont_opt]= strdup(argv[optind+1]);
+                *cont_opt=*cont_opt+1; 
+                modo=MOVE;
+                *ctr_opt=*ctr_opt+1;              
+                break;
+            case 'c':
+                *arquivador=strdup(optarg);
+                modo=LISTA;
+                *ctr_opt=*ctr_opt+1;
+                break;
+            default:
+                modo= NOP;
+        }		
     }
     
-
-    argerror('1');
-    return 1;
+    return modo;
 }

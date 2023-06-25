@@ -213,7 +213,7 @@ int arrumainsert(jose* j, minfo* novo){
     j->quant++;
 
     novo->ini=inicio;
-    novo->pos=j->quant;
+    novo->pos=j->quant;  
     
     return 1;
 }
@@ -374,7 +374,7 @@ int vinaInsere(char* nome, FILE* arq, jose* j ){
 
     unsigned int tamarchiver, rt;
     tamarchiver=tamanhovpp(j);
-     printf("tamanho relatado : %d\n", tamarchiver);
+    printf("tamanho relatado : %d\n", tamarchiver);
 
     //Se deu algum erro ao inserir, garante que o arq estará integro
     if( !(rt = insereMembro(member, arq, tamarchiver))){

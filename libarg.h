@@ -9,6 +9,8 @@
 #ifndef __LIBARGVINAPP__
 #define __LIBARGVINAPP__
 
+typedef enum { NOP, INSERE, ATUALIZA, REMOVE, MOVE, LISTA, EXTRAI} Modo_t;
+
 //imprime como devem ser os argumentos
 void arghelp();
 
@@ -16,6 +18,6 @@ void arghelp();
 void argerror(char cod);
 
 //Verifica os argumentos da entrada
-int checaarg(int argc, char **argv);
+Modo_t checaarg(int argc, char **argv, char** arquivador, char* input[], int *cont_opt, int *crt_opt);
 
 #endif
