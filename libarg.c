@@ -62,7 +62,7 @@ Modo_t checaarg (int argc, char **argv, char** arquivador, char* input[], int *c
     Modo_t modo=NOP;
     int opt, x;
 
-    while ((opt = getopt(argc, argv, "ci:a:x:r:m:")) != -1) {
+    while ((opt = getopt(argc, argv, "c:i:a:x:r:m:")) != -1) {
         switch (opt)
         {
             case 'i':

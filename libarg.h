@@ -1,6 +1,6 @@
 
 /*
-    Essa biblioteca implementa funções auxiliares ao vinapp,
+    Essa biblioteca implementa funções auxiliares ao vinapp
     como tratamento de argumentos, algumas manipulações de arquivos e diretórios
     Criado por Davi Garcia Lazzarin
     Data: 14/06/2023

@@ -45,6 +45,72 @@ typedef struct jose{
 #define PATH_SIZE 4096
 #define OFFSET_SIZE 4
 
+//retorna a posição de inserção no final do arquivo
+unsigned int tamanhovpp(jose* j){
+    
+    unsigned int tam;
+    if(j->ultimo){
+        tam=j->ultimo->membro->ini;
+        tam+=j->ultimo->membro->info.st_size;
+        return tam;
+    }
+    else
+        return OFFSET_SIZE + 1;
+}
+
+
+/*FUNÇÕES DE DEBUG*/
+
+//imprime os metadados passados
+void printminfo(minfo* dados){
+    printf("   nome:   %s\n",   dados->nome);
+    printf("caminho:   %s\n",   dados->caminho);
+    printf("     CC:   %s\n",   dados->path);
+    printf("    ini:   %u\n", dados->ini);
+    printf("posição:   %u\n", dados->pos);
+    printf("   size:   %lu\n", dados->info.st_size);
+    printf("  inode:   %d\n",   (int) dados->info.st_ino);
+    printf(" dev id:   %d\n",   (int) dados->info.st_dev);
+    printf("   mode:   %08x\n",       dados->info.st_mode);
+    printf("  links:   %ld\n",         dados->info.st_nlink);
+    printf("    uid:   %d\n",   (int) dados->info.st_uid);
+    printf("    gid:   %d\n",   (int) dados->info.st_gid);  
+}
+
+//Imprime toda a estrutura de dados do tipo jose
+void printJose(jose* j){    
+    m_nodo *aux;
+    unsigned tam=tamanhovpp(j);
+
+    printf("Primeiro: %s\n", j->primeiro->membro->nome);
+    printf("Ultimo: %s\n", j->ultimo->membro->nome);
+    printf("Total de bytes: %d\n", tam);
+    aux=j->primeiro;
+    for(int i=0; i<j->quant; i++){
+        printf("Metadados: %d.\n", i);
+        printminfo(aux->membro);        
+        if(aux->prox != NULL)
+            aux=aux->prox;
+    }
+}
+
+/* FUNÇÔES DE DEBUG*/
+
+
+//Imprime toda os dados do arquivo
+void listaJose(jose* j){    
+    m_nodo *aux;
+
+    aux=j->primeiro;
+    for(int i=0; i<j->quant; i++){
+        printf("Metadados: %d.\n", i);
+        printminfo(aux->membro);        
+        if(aux->prox != NULL)
+            aux=aux->prox;
+    }
+    
+}
+
 //recebe nome e o caminho e concatena eles OK
 void geraCaminhoCompleto(char* caminho, char* nome, char* l_caminho){
     strcpy(l_caminho, ".");
@@ -127,12 +193,20 @@ minfo* buscaMembro(char* nome, jose* j){
     minfo* rt;
     m_nodo* aux;
     
-    for(aux= j->primeiro; aux !=NULL; aux = aux->prox  ){
+    if(!j->quant)
+        return NULL;
+
+    for(aux= j->primeiro; aux !=j->ultimo; aux = aux->prox  ){
         if( !strcmp( nome, aux->membro->nome) ){
             rt=aux->membro;
             return rt;
         }
     }
+    if( !strcmp( nome, aux->membro->nome) ){
+        rt=aux->membro;
+        return rt;
+    }
+    
     return NULL;
 }//BuscaMembro OK
 
@@ -148,7 +222,7 @@ void arrumarm(jose* j, minfo* removido){
         aux=aux->prox;
     
     bkp=aux;
-    while(aux->prox != NULL){
+    while(aux != NULL){
         aux->membro->ini = aux->membro->ini - ajuste;
         aux=aux->prox;
     }
@@ -181,6 +255,7 @@ void arrumarm(jose* j, minfo* removido){
     aux->membro=NULL;
     free(aux);
     aux=NULL;
+    
 }
 
 //Insere o membro na estrutura
@@ -225,26 +300,28 @@ int arrumainsert(jose* j, minfo* novo){
 int vinaRemove(char* nome, FILE* arq, jose* j){
     minfo* membro;
     membro=buscaMembro(nome, j);
+
     unsigned int b_ini, b_fim, rt;
-    if(membro != NULL){
+    if((membro != NULL) && (j->quant != 1)){
         b_ini=membro->ini;
         b_fim=b_ini + ((membro->info.st_size) - 1);
         rt=removeBytes(arq, b_ini, b_fim);
         if(!rt){
             arrumarm(j, membro);
             return 0;
-        }
+        } 
     }
     
     fprintf(stderr,"Impossivel remover '%s'.\n", nome);
     return 1;
+  
 }//remove OK falta ajustar estrutura após remoção
 
 //Apaga o intervalo de bytes do arquivo
 //Retorna 0 se deu certo e 1 ou 2 em caso de erro
 int removeBytes(FILE* arq, const unsigned int b_ini, const unsigned int b_fim){
-    char* buffer[BUFFER_SIZE];
-
+    
+    char buffer[BUFFER_SIZE];
     unsigned int size = tamanhoarq(arq);
     unsigned int read = b_fim;
     unsigned int write = b_ini -1;
@@ -263,14 +340,14 @@ int removeBytes(FILE* arq, const unsigned int b_ini, const unsigned int b_fim){
         fseek(arq, read, SEEK_SET);
 
         //lê o buffer do tamanho do intervalo ou do tamanho do buffer caso o intervalo seja > 1024
-        if(size - read < BUFFER_SIZE)
+        if(size - read > BUFFER_SIZE)
             lido = fread(buffer, 1, BUFFER_SIZE, arq);
         else
             lido = fread(buffer, 1, size-read, arq);
         
         fseek(arq, write, SEEK_SET);
         fwrite(buffer, 1, lido, arq);
-        
+
         read += lido;
         write += lido;
     }
@@ -291,20 +368,6 @@ unsigned int tamanhoarq(FILE* arq){
     
     return (unsigned int) f_data.st_size;
 }//tamanhoArq OK
-
-//retorna a posição de inserção no final do arquivo
-unsigned int tamanhovpp(jose* j){
-    
-    unsigned int tam;
-    if(j->ultimo){
-        tam=j->ultimo->membro->ini;
-        tam+=j->ultimo->membro->info.st_size;
-        return tam;
-    }
-    else
-        return OFFSET_SIZE + 1;
-
-}
 
 //Insere os bytes do membro no .vpp passado como stream
 //Retorna 1 em caso de sucesso, 0 em caso se algum erro
@@ -361,20 +424,21 @@ int insereMembro(minfo* member,FILE* saida, const unsigned int pos){
 
 //Insere um arquivo no .vpp
 int vinaInsere(char* nome, FILE* arq, jose* j ){
-    //gravar o arquivo
-        //ver se ele existe
-        //gravar
-    //gerar o minfo
-    //ajustar o josé
-
+    
     minfo *member;
+    
+    member=buscaMembro(nome, j);
+    if(member != NULL){
+        vinaRemove(nome, arq, j);
+    }
+    member=NULL;
+    
     member=geraminfo(nome);
     if(!member)
         return 0;
 
     unsigned int tamarchiver, rt;
     tamarchiver=tamanhovpp(j);
-    printf("tamanho relatado : %d\n", tamarchiver);
 
     //Se deu algum erro ao inserir, garante que o arq estará integro
     if( !(rt = insereMembro(member, arq, tamarchiver))){
@@ -389,18 +453,177 @@ int vinaInsere(char* nome, FILE* arq, jose* j ){
     return 0;
 }
 
-//imprime os metadados passados
-void printminfo(minfo* dados){
-    printf("   nome:   %s\n",   dados->nome);
-    printf("caminho:   %s\n",   dados->caminho);
-    printf("     CC:   %s\n",   dados->path);
-    printf("    ini:   %u\n", dados->ini);
-    printf("posição:   %u\n", dados->pos);
-    printf("   size:   %lu\n", dados->info.st_size);
-    printf("  inode:   %d\n",   (int) dados->info.st_ino);
-    printf(" dev id:   %d\n",   (int) dados->info.st_dev);
-    printf("   mode:   %08x\n",       dados->info.st_mode);
-    printf("  links:   %ld\n",         dados->info.st_nlink);
-    printf("    uid:   %d\n",   (int) dados->info.st_uid);
-    printf("    gid:   %d\n",   (int) dados->info.st_gid);   
+//Lê o arquivador e carrega os metadados
+//Salva em j, retorna j ou NULL em caso de erro
+jose* carregaJose(FILE* arq){
+
+    jose* j;
+    j=malloc(sizeof(jose));
+    if(!j){
+        fprintf(stderr,"Erro ao carregar metadados.\n");
+        return NULL;
+    }
+
+    unsigned int rt, offset;
+    unsigned long quant;
+    fseek(arq, 0, SEEK_SET);
+    fread(&offset, 1, sizeof(unsigned int), arq);
+    fseek(arq, offset, SEEK_SET);
+    fread(&quant, 1, sizeof(unsigned long), arq);
+
+    minfo *memb;
+    m_nodo *no, *aux;
+
+    for(int i=0; i<quant; i++){
+        memb=malloc(sizeof(minfo));
+        if(!memb){
+            fprintf(stderr,"Erro ao carregar metadados.\n");
+            return NULL;
+        }
+        no=malloc(sizeof(m_nodo));
+        if(!no){
+            fprintf(stderr,"Erro ao carregar metadados.\n");
+            return NULL;
+        }
+        rt=fread(memb, 1, sizeof(minfo), arq);
+        if(!rt){
+            fprintf(stderr,"Erro ao carregar metadados.\n");
+            return NULL;
+        }
+
+        if(i==0){
+            j->primeiro=no;
+            j->ultimo=no;
+            no->membro=memb;
+            no->ante=NULL;
+            no->prox=NULL;
+        }
+        else{
+            aux->prox=no;
+            no->ante=aux;
+            no->membro=memb;
+            j->ultimo=no;
+        }
+        aux=no;
+    }
+    j->quant=quant;
+    
+    return j;
+}
+
+//Grava os metadados no arquivo
+//Retorna 1 em caso de sucesso e 0 em caso de erro
+int escreveJose(FILE* arq, jose* j){
+
+    m_nodo *aux;
+    fseek(arq, 0,SEEK_SET);
+    unsigned int offset, rt;
+    
+    //grava no arquivo um ponteiro para o local onde inicia o jose no arq
+    offset=tamanhovpp(j);
+    
+    rt=fwrite(&offset, 1, sizeof(unsigned int), arq);
+    if(rt != sizeof(unsigned int))
+        return 0;
+    
+    //Começa a gravar o jose onde offset aponta
+    fseek(arq, offset, SEEK_SET);
+    rt=fwrite(&j->quant, 1, sizeof(unsigned long), arq);
+    if(rt != sizeof(unsigned long))
+        return 0;
+
+    aux=j->primeiro;
+    for( int i=0; i<j->quant; i++){
+        
+        rt=fwrite(aux->membro, 1, sizeof(minfo), arq);
+        if(rt != sizeof(minfo))
+            return 0;
+
+        if(aux->prox)
+            aux=aux->prox;
+    }
+    
+    return 1;
+
+}
+
+//Abre ou cria o arquivador com nome passado
+FILE* abreArquivador(char* nome_arq, jose** j){
+
+    FILE* arq;
+    jose* aux;
+    if(!access(nome_arq, F_OK )){
+        //Abriu arquivo existente
+        arq=fopen(nome_arq, "r+");
+        if(!arq){
+            fprintf(stderr,"Erro ao abrir arquivo.\n");
+            return NULL;
+        }
+
+        *j=carregaJose(arq);
+        if(!*j)    
+            return NULL;
+
+    }else{
+        //Criar arquivador novo
+        arq=fopen(nome_arq, "w+");
+        *j=malloc(sizeof(jose));
+        if(!*j)    
+            return NULL;
+        aux=*j;
+        aux->quant=0;
+        aux->primeiro=NULL;
+        aux->ultimo=NULL;
+        
+        //primeira posição para poder inserir membros
+        unsigned int offset=OFFSET_SIZE + 1;  
+        fwrite(&offset, 1, OFFSET_SIZE, arq);
+    }
+    return arq; 
+}
+
+//Atualiza o membro no .vpp caso o arquivo seja mais recente
+int vinaAtualiza(char* nome, FILE* arq, jose* j){
+    
+    minfo* membro, *novo;
+    membro=buscaMembro(nome, j);
+    if(membro == NULL)
+        vinaInsere(nome, arq, j);
+    else{
+        novo=geraminfo(nome);
+        if(!novo){
+            fprintf(stderr,"Erro ao atualizar o arquivo: %s\n", nome);
+            return 0;
+        }
+        if(novo->info.st_mtim.tv_sec > membro->info.st_mtim.tv_sec){
+            vinaInsere(nome, arq, j); 
+        }
+        else{
+            printf("Não atualizado\n");
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+
+//Libera memória usada na estrutura
+void freeJose(jose* j){
+
+    m_nodo* naux, *no;
+    if(j){
+        no=j->primeiro;
+        while(no){
+            naux=no;
+            no=no->prox;
+            free(naux->membro);
+            free(naux);
+        }
+        
+        j->primeiro=NULL;
+        j->ultimo=NULL;
+        free(j);
+        j=NULL;
+    }
 }

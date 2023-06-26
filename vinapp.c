@@ -1,7 +1,7 @@
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -10,14 +10,14 @@
 #include "libvinapp.h"
 #include "libarg.h"
 
-//typedef enum { NOP, INSERE, ATUALIZA, REMOVE, MOVE, LISTA, EXTRAI} Modo_t;
-
 int main(int argc, char **argv) {
     
+    FILE* arq=NULL;
     int cont_opt=0, x, ctr_opt=0;
     char **input = NULL;
     char *arquivador = NULL, *target=NULL;
     Modo_t modo = NOP;
+    jose* j=NULL;
     
     if(argc == 2 && (strcmp(argv[1], "--help") || strcmp(argv[1], "-h") ) ){
         arghelp();
@@ -30,37 +30,43 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    printf("NA MAIN cont: %d, ctr: %d\n", cont_opt, ctr_opt);
     modo=checaarg(argc, argv, &arquivador, input, &cont_opt, &ctr_opt );
-    printf("NA MAIN cont: %d, ctr: %d\n", cont_opt, ctr_opt);
    
     if(ctr_opt>1 || argc == 1){
         argerror(2);
     }
     else{
-        
         switch (modo)
         {
             case INSERE:
-            
-                printf("Insere no arquivador: %s\n", arquivador);
+                arq=abreArquivador(arquivador, &j);
 
-                for(x=0; x<cont_opt; x++)
-                    printf("%d arquivos: %s\n", x+1, input[x]);   
+                printf("Insere:\n");
+                for(x=0; x<cont_opt; x++){
+                    printf("%s\n", input[x]); 
+                    vinaInsere(input[x], arq, j);
+                }
+                escreveJose(arq, j);
                 break;
             case REMOVE:
-                printf("Remove do arquivador: %s\n", arquivador);
-
-                for(x=0; x<cont_opt; x++)
-                    printf("%d arquivos: %s\n", x+1, input[x]);
+                arq=abreArquivador(arquivador, &j);
                 
+                printf("Remove:\n");
+                for(x=0; x<cont_opt; x++){
+                    printf("%s\n", input[x]);   
+                    vinaRemove(input[x], arq, j);
+                }
+                escreveJose(arq, j);
                 break;
             case ATUALIZA:
-                printf("Atualiza no arquivador: %s\n", arquivador);
-
-                for(x=0; x<cont_opt; x++)
-                    printf("%d arquivos: %s\n", x+1, input[x]);
+                arq=abreArquivador(arquivador, &j);
                 
+                printf("Atualiza:\n");
+                for(x=0; x<cont_opt; x++){
+                    printf("%s\n", input[x]);
+                    vinaAtualiza(input[x], arq, j);
+                }
+                escreveJose(arq, j);
                 break;
             case EXTRAI:
                 printf("Extrai do arquivador: %s\n", arquivador);
@@ -83,13 +89,26 @@ int main(int argc, char **argv) {
                 break;
             case LISTA:
                 printf("Lista os membros do arquivo.\n");
-                
+                arq=abreArquivador(arquivador, &j);
+                //listaJose(j);
+                printJose(j);
                 break;
             
             default:
                 break;
         }
     }
+
+    if(arq) 
+        fclose(arq);
+    freeJose(j);
+    free(arquivador);
+    for(int o=0; o<cont_opt; o++)
+        free(input[o]);
+    if(input)
+        free(input);
+    
+    return 0;
 
 
     /*
@@ -148,6 +167,4 @@ int main(int argc, char **argv) {
     chdir(caminhoOriginal);
     removeBytes(bkp, 1, 7);
     fclose(bkp);*/
-    free(input);
-    return 0;
 }
